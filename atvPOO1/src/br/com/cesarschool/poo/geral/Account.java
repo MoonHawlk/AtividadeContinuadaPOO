@@ -13,20 +13,17 @@ public class Account {
 	private boolean closed;
 	private boolean blocked;
 	
-	public Account(long number, String status) {
+	public Account(long number, String status, LocalDate date) {
 		this.number = number;
-		this.status = "ativa";
 		this.balance = 0;
 		
-		this.activated = true;
-		this.closed = false;
-		this.blocked = false;
+		setStatusVariable(status);
+		this.status = status;
 		
-
 		AccountScore initial_score = AccountScore.BRONZE;
 		String score_value = initial_score.getScore();
 		this.score = score_value;
-		this.creation_date = LocalDate.now();
+		this.creation_date = date;
 	}
 
 	public long getNumber() {
@@ -110,6 +107,22 @@ public class Account {
 
 	public void setBlocked(boolean blocked) {
 		this.blocked = blocked;
+	}
+	
+	private void setStatusVariable(String status) {
+	    if (status == "Ativa") {
+            this.activated = true;
+            this.closed = false;
+            this.blocked = false;
+        } else if (status == "Encerrada") {
+            this.activated = false;
+            this.closed = true;
+            this.blocked = false;
+        } else if (status == "Bloqueada") {
+            this.activated = false;
+            this.closed = false;
+            this.blocked = true;
+        }
 	}
 	
 }
