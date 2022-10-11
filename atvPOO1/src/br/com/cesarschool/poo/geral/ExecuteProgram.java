@@ -1,6 +1,6 @@
 package br.com.cesarschool.poo.geral;
 
-public class ExecuteCreateAccount {
+public class ExecuteProgram {
 	
 	public static void main(String[] args) {
 		AccountScreen screen = new AccountScreen();
