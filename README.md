@@ -1,13 +1,5 @@
-# AtividadeContinuadaPOO
-Repositorio para atividade continuada POO
-Alunos: 
+### AtividadeContinuadaPOO
 
-Diogo Maranhão
+Repositorio para atividade continuada Programação Orientada a Objetos 
 
-Filipe Moreno
-
-Ian Pedro
-
-Rennan Pontes
-
-Gabriel Costa
+Alunos: Diogo Maranhão, Filipe Moreno, Gabriel Costa, Ian Pedro, Rennan Pontes
