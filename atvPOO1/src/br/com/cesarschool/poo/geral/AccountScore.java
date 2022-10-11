@@ -5,7 +5,7 @@ public enum AccountScore {
 	BRONZE(1, "Bronze"),
 	PRATA(2, "Prata"),
 	OURO(3, "Ouro"),
-	DIAMENTE(4, "Diamente"); 
+	DIAMENTE(4, "Diamante"); 
 		
 	private int code;
 	private String score;
