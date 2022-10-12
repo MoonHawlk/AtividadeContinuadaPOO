@@ -54,11 +54,11 @@ public class AccountScreen {
 					}
 					break;
 
-				case 6:
+				case 6: 
 					code = searchProcess();
 
 					if (code != UNKNOWN_CODE) {
-						creditAccount(code);
+						deleteAccount(code);
 					}
 					break;
 
@@ -66,11 +66,27 @@ public class AccountScreen {
 					code = searchProcess();
 
 					if (code != UNKNOWN_CODE) {
-						debitAccount(code);
+						findAccount();
 					}
 					break;
 
 				case 8:
+					code = searchProcess();
+
+					if (code != UNKNOWN_CODE) {
+						creditAccount(code);
+					}
+					break;
+
+				case 9:
+					code = searchProcess();
+
+					if (code != UNKNOWN_CODE) {
+						debitAccount(code);
+					}
+					break;
+
+				case 10:
 					System.out.println("Encerrando o Sistema, Valeu Calabria...");
 					System.exit(0);
 					break;
@@ -88,28 +104,33 @@ public class AccountScreen {
 		System.out.println("3- Encerar");
 		System.out.println("4- Bloquear");
 		System.out.println("5- Desbloquear");
-		System.out.println("6- Creditar");
-		System.out.println("7- Debitar");
-		System.out.println("8- Sair");
+		System.out.println("6- Excluir");
+		System.out.println("7- Buscar");
+		System.out.println("8- Creditar");
+		System.out.println("9- Debitar");
+		System.out.println("10- Sair");
 		System.out.print("Digite a opção: ");
 	}
 
 	private void includeAccount() {
 		Account account = captureAccount(UNKNOWN_CODE);
-		String validationReturn = validate(account);
 
-		if (validationReturn == null) {
+		if (account != null) {
+			String validationReturn = validate(account);
 
-			boolean dataBaseReturn = dataBaseAccount.include(account);
-			if (dataBaseReturn) {
-				System.out.println("Conta incluído com sucesso!");
+			if (validationReturn == null) {
+
+				boolean dataBaseReturn = dataBaseAccount.include(account);
+				if (dataBaseReturn) {
+					System.out.println("Conta incluído com sucesso!");
+				} else {
+					System.out.println("Erro na inclusão da Conta!");
+				}
 			} else {
-				System.out.println("Erro na inclusão da Conta!");
+				System.out.println(validationReturn);
 			}
-		} else {
-			System.out.println(validationReturn);
-		}
-
+		} 
+			
 	}
 
 	private void alterAccount(long number) {
@@ -198,7 +219,8 @@ public class AccountScreen {
 	private Account captureAccount(long alteredCode) {
 		long number;
 		long valueStatus = 0;
-		LocalDate date = null;
+		LocalDate creationDate = null;
+		LocalDate verifyDate = null;
 		
 		if (alteredCode == UNKNOWN_CODE) {
 			System.out.print("Digite o número da conta: ");
@@ -221,12 +243,20 @@ public class AccountScreen {
 			System.out.println("Dia:");
 			int dayDate = INPUT.nextInt();
 			
-			date = LocalDate.of(yearDate, monthDate, dayDate);
+			creationDate = LocalDate.of(yearDate, monthDate, dayDate);
+			verifyDate = LocalDate.now();
+
+			int accountLifeTime = verifyDate.compareTo(creationDate);
+
+			if (accountLifeTime < 0 || accountLifeTime > 30) {
+				System.out.println("Data Inválida!");
+				return null;
+			}
 			
 		} else {
 			number = alteredCode;
 		}
-		
+			
 		String initial_status = null;
 		
 		if (valueStatus == 1) {
@@ -237,9 +267,8 @@ public class AccountScreen {
 		    initial_status = "Bloqueada";
 		}
 		
-
-		return new Account(number, initial_status, date);
-	}
+		return new Account(number, initial_status, creationDate);
+		}
 
 	private String validate(Account account) {
 
@@ -378,6 +407,61 @@ public class AccountScreen {
 			} else {
 				System.out.println("Entrada INVÁLIDA, Saindo da Sessão");
 			}
+		}
+	}
+
+	private void deleteAccount(long number) {
+
+		Account account = dataBaseAccount.findAccount(number);
+
+		boolean deleteAccountVerify = dataBaseAccount.delete(number);
+
+		if (deleteAccountVerify) {
+			System.out.printf("Conta de numero %d foi Excluida!", account.getNumber());
+		}
+
+	}
+
+	private void findAccount() {
+
+		System.out.println("Digite o numero da Conta: ");
+		long number = INPUT.nextLong();
+		Account account = dataBaseAccount.find(number);
+		String score_value = null;
+
+		if (account == null) {
+			System.out.println("Conta não encontrada!");
+		} else {
+			System.out.println("Numero da Conta: " + account.getNumber());
+			System.out.println("Status da Conta: " + account.getStatus());
+			System.out.println("Saldo da Conta: " + account.getBalance());
+			
+			if (account.getBlocked()) {
+			    System.out.println("Score da Conta: INDISPONÍVEL, Status BLOQUEADO");
+			} else if (account.getClosed()){
+			    System.out.println("Score da Conta: 0, Status ENCERRADO");
+			} else {
+			    float balance = account.getBalance()*3;
+			    LocalDate dateToday = LocalDate.now();
+			    int accountLifeTime = dateToday.compareTo(account.getCreation_date())*2;
+			    
+			    float resultScore = balance + accountLifeTime;
+			    
+			    if (resultScore < 5800) { 
+			        score_value = "Bronze";
+			    } else if (resultScore <= 13000 && resultScore >= 5800) {
+			        score_value = "Prata";
+			    } else if (resultScore <= 39000  && resultScore >= 13001) {
+			        score_value = "Ouro";
+			    } else if (resultScore > 39000) {
+			        score_value = "Diamante";
+			    }
+			    
+			    System.out.println("Score da Conta: " + score_value);
+			}
+			
+			System.out.println("Criação da Conta: " + account.getCreation_date());
+			
 		}
 	}
 
