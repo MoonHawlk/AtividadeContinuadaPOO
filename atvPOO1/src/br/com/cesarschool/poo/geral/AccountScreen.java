@@ -22,8 +22,11 @@ public class AccountScreen {
 					break;
 
 				case 2:
-					// code =
-					System.out.println("ALTERAR");
+					code = searchProcess();
+					
+					if (code != UNKNOWN_CODE) {
+						alterAccount(code);
+					}
 					break;
 
 				case 3:
@@ -47,7 +50,7 @@ public class AccountScreen {
 					code = searchProcess();
 
 					if (code != UNKNOWN_CODE) {
-						unblockAccount(code);
+						unlockAccount(code);
 					}
 					break;
 
@@ -107,6 +110,36 @@ public class AccountScreen {
 			System.out.println(validationReturn);
 		}
 
+	}
+
+	private void alterAccount(long number) {
+		Account account = dataBaseAccount.findAccount(number);
+
+		System.out.println("Deseja alterar a Data da Conta:");
+		System.out.println("1- Alterar");
+		System.out.println("5- Cancelar");
+
+		int sessionVariable = INPUT.nextInt();
+
+		if (sessionVariable == 1) {
+			System.out.println("Digite a Data de Criaçõa da Conta:");
+			System.out.println("Nesse Formato (YYYY/MM/DD)");
+			System.out.println("Ano:");
+			int yearDate = INPUT.nextInt();
+			
+			System.out.println("Mês:");
+			int monthDate = INPUT.nextInt();
+			
+			System.out.println("Dia:");
+			int dayDate = INPUT.nextInt();
+			
+			account.setCreationDate(LocalDate.of(yearDate, monthDate, dayDate));
+			System.out.println(("Data de Criação Alterada!"));
+		} else if (sessionVariable == 5) {
+			System.out.println("Operação Cancelada!");
+		} else {
+			System.out.println("Opção Inválida");
+		}
 	}
 
 	private long searchProcess() {
@@ -273,21 +306,25 @@ public class AccountScreen {
 
 		Account account = dataBaseAccount.findAccount(number);
 
-		System.out.println("Deseja encerrar a conta? ");
-		System.out.println("1- Encerrar Conta");
-		System.out.println("5- Sair da sessão Encerar");
-
-		int sessionVariable = INPUT.nextInt();
-
-		if (sessionVariable == 1) {
-			System.out.println("CONTA ENCERRADA");
-			account.setStatus("encerrada");
-			account.setClosed(true);
-			account.setActivated(false);
-		} else if (sessionVariable == 5) {
-			System.out.println("SAIR DA SESSÃO ENCERRAR");
+		if (account.getClosed()) {
+			System.out.println("Conta já Encerrada!");
 		} else {
-			System.out.println("Entrada INVÁLIDA, Saindo da Sessão");
+			System.out.println("Deseja encerrar a conta? ");
+			System.out.println("1- Encerrar Conta");
+			System.out.println("5- Sair da sessão Encerar");
+
+			int sessionVariable = INPUT.nextInt();
+
+			if (sessionVariable == 1) {
+				System.out.println("CONTA ENCERRADA");
+				account.setStatus("encerrada");
+				account.setClosed(true);
+				account.setActivated(false);
+			} else if (sessionVariable == 5) {
+				System.out.println("SAIR DA SESSÃO ENCERRAR");
+			} else {
+				System.out.println("Entrada INVÁLIDA, Saindo da Sessão");
+			}
 		}
 	}
 
@@ -295,43 +332,52 @@ public class AccountScreen {
 
 		Account account = dataBaseAccount.findAccount(number);
 
-		System.out.println("Deseja bloquear a conta?");
-		System.out.println("1- Bloquear Conta");
-		System.out.println("5- Sair da sessão Bloquear");
-
-		int sessionVariable = INPUT.nextInt();
-
-		if (sessionVariable == 1) {
-			System.out.println("CONTA BLOQEADA");
-			account.setStatus("bloqueada");
-			account.setBlocked(true);
-			account.setActivated(false);
-		} else if (sessionVariable == 5) {
-			System.out.println("SAIR DA SESSÃO BLOQUEAR");
+		if (account.getBlocked() || account.getClosed()) {
+			System.out.println("Conta já Bloqueada ou Encerrada!");
 		} else {
-			System.out.println("Entrada INVÁLIDA, Saindo da Sessão");
+			System.out.println("Deseja bloquear a conta?");
+			System.out.println("1- Bloquear Conta");
+			System.out.println("5- Sair da sessão Bloquear");
+
+			int sessionVariable = INPUT.nextInt();
+
+			if (sessionVariable == 1) {
+				System.out.println("CONTA BLOQEADA");
+				account.setStatus("bloqueada");
+				account.setBlocked(true);
+				account.setActivated(false);
+			} else if (sessionVariable == 5) {
+				System.out.println("SAIR DA SESSÃO BLOQUEAR");
+			} else {
+				System.out.println("Entrada INVÁLIDA, Saindo da Sessão");
+			}
 		}
+
 	}
 
-	private void unblockAccount(long number) {
+	private void unlockAccount(long number) {
 
 		Account account = dataBaseAccount.findAccount(number);
 
-		System.out.println("Deseja desbloquear conta? ");
-		System.out.println("1- Desbloquear Conta");
-		System.out.println("5- Sair da sessão Desbloquear");
-
-		int sessionVariable = INPUT.nextInt();
-
-		if (sessionVariable == 1) {
-			System.out.println("CONTA DESBLOQEADA");
-			account.setStatus("ativa");
-			account.setBlocked(false);
-			account.setActivated(true);
-		} else if (sessionVariable == 5) {
-			System.out.println("SAIR DA SESSÃO DESBLOQUEAR");
+		if (account.getActivated() || account.getClosed()) {
+			System.out.println("Conta já Ativa ou Conta Encerrada!");
 		} else {
-			System.out.println("Entrada INVÁLIDA, Saindo da Sessão");
+			System.out.println("Deseja desbloquear conta? ");
+			System.out.println("1- Desbloquear Conta");
+			System.out.println("5- Sair da sessão Desbloquear");
+
+			int sessionVariable = INPUT.nextInt();
+
+			if (sessionVariable == 1) {
+				System.out.println("CONTA DESBLOQEADA");
+				account.setStatus("ativa");
+				account.setBlocked(false);
+				account.setActivated(true);
+			} else if (sessionVariable == 5) {
+				System.out.println("SAIR DA SESSÃO DESBLOQUEAR");
+			} else {
+				System.out.println("Entrada INVÁLIDA, Saindo da Sessão");
+			}
 		}
 	}
 

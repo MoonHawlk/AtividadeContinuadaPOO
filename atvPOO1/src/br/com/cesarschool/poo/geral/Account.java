@@ -53,6 +53,10 @@ public class Account {
 	public LocalDate getCreation_date() {
 		return creation_date;
 	}
+
+	public LocalDate setCreationDate(LocalDate date) {
+		return this.creation_date = date;
+	}
 	
 	public String getScore() {
 		return score;
