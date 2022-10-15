@@ -7,22 +7,22 @@ public class AccountMediator {
 
     private DataBaseAccount dataBaseAccount = DataBaseAccount.getInstance();
 
-	private static final String MENSAGEM_PRODUTO_NAO_INFORMADO = "Produto n�o informado!";
-	private static final String MENSAGEM_CODIGO_INVALIDO = "C�digo inv�lido!";
+	private static final String MESAGE_ACCOUNT_NOT_INFORMED = "Conta não informada!";
+	private static final String MESAGE_INVALID_NUMBER = "Numero inválido!";
 	private static final String MENSAGEM_PRECO_INVALIDO = "Pre�o inv�lido!";
-	private static final String MENSAGEM_NOME_NAO_INFORMADO = "Nome n�o informado!";	
-	private static final String MENSAGEM_TIPO_NAO_PREENCHIDO = "Tipo n�o preenchido!";
-	private static final String MENSAGEM_PRODUTO_JA_CADASTRADO = "Produto j� cadastrado!";
-	private static final String MENSAGEM_PRODUTO_NAO_ENCONTRADO = "Produto n�o encontrado!";
-	private static final int TAMANHO_MINIMO_NOME = 3; //NUMERO MINIMO AJEITAR
+	//private static final String MESAGE_NUMBER_NOT_INFORMED = "Numero não informado!";	
+	private static final String MESAGE_SCORE_NOT_FILLED = "Score não preenchido!";
+	private static final String MESAGE_ACCOUNT_REGISTERED = "Conta já cadastrado!";
+	private static final String MESAGE_CONTA_NOT_FOUND = "Produto n�o encontrado!";
+	//private static final int TAMANHO_MINIMO_NOME = 3; //NUMERO MINIMO AJEITAR
 	
 	public AccountValidationStatus include(Account account) {
 		AccountValidationStatus status = validate(account);
 		if (status.isValid()) {
 			boolean dataBaseReturn = dataBaseAccount.include(account);
 			if (!dataBaseReturn) {
-				status.getErrorCodes()[0] = AccountValidationStatus.PRODUTO_JA_CADASTRADO;
-				status.getMesages()[0] = MENSAGEM_PRODUTO_JA_CADASTRADO;
+				status.getErrorCodes()[0] = AccountValidationStatus.MESAGE_ACCOUNT_REGISTERED;
+				status.getMesages()[0] = MESAGE_ACCOUNT_REGISTERED;
 				status.setValid(false);
 			}
 		}				
@@ -33,8 +33,8 @@ public class AccountMediator {
 		if (status.isValid()) {
 			boolean dataBaseReturn = dataBaseAccount.change(account);
 			if (!dataBaseReturn) {
-				status.getErrorCodes()[0] = AccountValidationStatus.PRODUTO_NAO_ENCONTRADO;
-				status.getMesages()[0] = MENSAGEM_PRODUTO_NAO_ENCONTRADO;
+				status.getErrorCodes()[0] = AccountValidationStatus.MESAGE_CONTA_NOT_FOUND;
+				status.getMesages()[0] = MESAGE_CONTA_NOT_FOUND;
 				status.setValid(false);
 			}
 		}				
@@ -48,19 +48,19 @@ public class AccountMediator {
 	}
 	
 	private AccountValidationStatus validate(Account account) {
-		int[] codeStatus = new int[AccountValidationStatus.QTD_SITUACOES_EXCECAO]; 
-		String[] mesagesStatus = new String[AccountValidationStatus.QTD_SITUACOES_EXCECAO];
+		int[] codeStatus = new int[AccountValidationStatus.QTT_EXCEPTION_SITUATIONS]; 
+		String[] mesagesStatus = new String[AccountValidationStatus.QTT_EXCEPTION_SITUATIONS];
 		int contErrors = 0;
 		if (account == null) {
-			codeStatus[contErrors++] = AccountValidationStatus.PRODUTO_NAO_INFORMADO;
-			mesagesStatus[contErrors] = MENSAGEM_PRODUTO_NAO_INFORMADO;			
+			codeStatus[contErrors++] = AccountValidationStatus.ACCOUNT_NOT_INFORMED;
+			mesagesStatus[contErrors] = MESAGE_ACCOUNT_NOT_INFORMED;			
 		} else {
 			if (!validateNumber(account)) {
-				codeStatus[contErrors++] = AccountValidationStatus.CODIGO_INVALIDO;
-				mesagesStatus[contErrors] = MENSAGEM_CODIGO_INVALIDO;
+				codeStatus[contErrors++] = AccountValidationStatus.INVALID_CODE;
+				mesagesStatus[contErrors] = MESAGE_INVALID_NUMBER;
 			}
 			/*if (!validateDate(account)) {
-				codeStatus[contErrors++] = AccountValidationStatus.CODIGO_INVALIDO;
+				codeStatus[contErrors++] = AccountValidationStatus.INVALID_CODE;
 				mesagesStatus[contErrors] = MENSAGEM_CODIGO_INVALIDO;
 			}*/
 			if (!validateBalance(account)) {
@@ -68,12 +68,12 @@ public class AccountMediator {
 				mesagesStatus[contErrors] = MENSAGEM_PRECO_INVALIDO;				
 			}		
 			if (!filledScore(account)) {
-				codeStatus[contErrors++] = AccountValidationStatus.TIPO_NAO_PREENCHIDO;
-				mesagesStatus[contErrors] = MENSAGEM_TIPO_NAO_PREENCHIDO;												
+				codeStatus[contErrors++] = AccountValidationStatus.SCORE_NOT_FILLED;
+				mesagesStatus[contErrors] = MESAGE_SCORE_NOT_FILLED;												
 			}
 			if (!validateStatus(account)) {
-				codeStatus[contErrors++] = AccountValidationStatus.TIPO_NAO_PREENCHIDO;
-				mesagesStatus[contErrors] = MENSAGEM_TIPO_NAO_PREENCHIDO;	
+				codeStatus[contErrors++] = AccountValidationStatus.SCORE_NOT_FILLED;
+				mesagesStatus[contErrors] = MESAGE_SCORE_NOT_FILLED;	
 			}
 		}		
 		return new AccountValidationStatus(codeStatus, mesagesStatus, contErrors == 0);		

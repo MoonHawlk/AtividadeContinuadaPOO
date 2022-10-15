@@ -12,8 +12,9 @@ public class Account {
 	private boolean activated;
 	private boolean closed;
 	private boolean blocked;
+	private AccountHolder holder;
 	
-	public Account(long number, String status, LocalDate date) {
+	public Account(long number, String status, LocalDate date, AccountHolder holder) {
 		this.number = number;
 		this.balance = 0;
 		
@@ -24,6 +25,7 @@ public class Account {
 		String score_value = initial_score.getScore();
 		this.score = score_value;
 		this.creation_date = date;
+		this.holder = holder;
 	}
 
 	public long getNumber() {
@@ -104,6 +106,14 @@ public class Account {
             this.closed = false;
             this.blocked = true;
         }
+	}
+
+	public AccountHolder getHolder() {
+		return holder;
+	}
+
+	public void setHolder(AccountHolder holder) {
+		this.holder = holder;
 	}
 	
 }
