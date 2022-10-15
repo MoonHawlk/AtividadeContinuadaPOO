@@ -1,14 +1,23 @@
-package br.com.cesarschool.poo.geral;
+package br.com.cesarschool.poo.telas;
 
 import java.util.Scanner;
+
+import br.com.cesarschool.poo.entidades.Account;
+import br.com.cesarschool.poo.entidades.AccountScore;
+import br.com.cesarschool.poo.mediators.AccountMediator;
+import br.com.cesarschool.poo.mediators.AccountValidationStatus;
+import br.com.cesarschool.poo.repositorios.DataBaseAccount;
+
 import java.time.LocalDate;
 
 public class AccountScreen {
 
 	private static final int UNKNOWN_CODE = -1;
+	private static final String PRODUTO_NAO_ENCONTRADO = "Produto n�o encontrado!";
 	private static final Scanner INPUT = new Scanner(System.in);
-	private DataBaseAccount dataBaseAccount = new DataBaseAccount();
-
+	private AccountMediator accountMediator = new AccountMediator();
+	private DataBaseAccount dataBaseAccount = DataBaseAccount.getInstance();
+    
 	public void executeScreen() {
 		while (true) {
 
@@ -66,7 +75,7 @@ public class AccountScreen {
 					code = searchProcess();
 
 					if (code != UNKNOWN_CODE) {
-						findAccount();
+						findAccount(code);
 					}
 					break;
 
@@ -112,62 +121,72 @@ public class AccountScreen {
 		System.out.print("Digite a opção: ");
 	}
 
+	private void processaMensagensErroValidacao(AccountValidationStatus status) {
+		String[] mesagesErrors = status.getMesages();
+		System.out.println("Problemas ao incuir/alterar produto:");
+		for (String mesageError : mesagesErrors) {
+			if (mesageError != null) {
+				System.out.println(mesageError);
+			} 
+		}
+	}
+
 	private void includeAccount() {
 		Account account = captureAccount(UNKNOWN_CODE);
+		AccountValidationStatus status = accountMediator.include(account);
 
 		if (account != null) {
-			String validationReturn = validate(account);
-
-			if (validationReturn == null) {
-
-				boolean dataBaseReturn = dataBaseAccount.include(account);
-				if (dataBaseReturn) {
-					System.out.println("Conta incluído com sucesso!");
-				} else {
+			if (status.isValid()) {
+				System.out.println("Conta incluído com sucesso!");
+			}else {
 					System.out.println("Erro na inclusão da Conta!");
 				}
 			} else {
-				System.out.println(validationReturn);
+				System.out.println(status);
 			}
 		} 
-			
-	}
 
 	private void alterAccount(long number) {
-		Account account = dataBaseAccount.findAccount(number);
+		Account account = accountMediator.find(number);
+		AccountValidationStatus status = accountMediator.alter(account);
 
-		System.out.println("Deseja alterar a Data da Conta:");
-		System.out.println("1- Alterar");
-		System.out.println("5- Cancelar");
+		if (status.isValid()) {
+			System.out.println("Deseja alterar a Data da Conta:");
+			System.out.println("1- Alterar");
+			System.out.println("5- Cancelar");
 
-		int sessionVariable = INPUT.nextInt();
+			int sessionVariable = INPUT.nextInt();
 
-		if (sessionVariable == 1) {
-			System.out.println("Digite a Data de Criaçõa da Conta:");
-			System.out.println("Nesse Formato (YYYY/MM/DD)");
-			System.out.println("Ano:");
-			int yearDate = INPUT.nextInt();
-			
-			System.out.println("Mês:");
-			int monthDate = INPUT.nextInt();
-			
-			System.out.println("Dia:");
-			int dayDate = INPUT.nextInt();
-			
-			account.setCreationDate(LocalDate.of(yearDate, monthDate, dayDate));
-			System.out.println(("Data de Criação Alterada!"));
-		} else if (sessionVariable == 5) {
-			System.out.println("Operação Cancelada!");
+			if (sessionVariable == 1) {
+				System.out.println("Digite a Data de Criaçõa da Conta:");
+				System.out.println("Nesse Formato (YYYY/MM/DD)");
+				System.out.println("Ano:");
+				int yearDate = INPUT.nextInt();
+				
+				System.out.println("Mês:");
+				int monthDate = INPUT.nextInt();
+				
+				System.out.println("Dia:");
+				int dayDate = INPUT.nextInt();
+				
+				account.setCreationDate(LocalDate.of(yearDate, monthDate, dayDate));
+				System.out.println(("Data de Criação Alterada!"));
+			} else if (sessionVariable == 5) {
+				System.out.println("Operação Cancelada!");
+			} else {
+				System.out.println("Opção Inválida");
+			}
 		} else {
-			System.out.println("Opção Inválida");
+			processaMensagensErroValidacao(status);
 		}
+		
 	}
 
 	private long searchProcess() {
 
 		System.out.println("Digite o numero da Conta: ");
 		long number = INPUT.nextLong();
-		Account account = dataBaseAccount.find(number);
+		Account account = accountMediator.find(number);
 		AccountScore score;
 		String score_value;
 
@@ -246,9 +265,31 @@ public class AccountScreen {
 			creationDate = LocalDate.of(yearDate, monthDate, dayDate);
 			verifyDate = LocalDate.now();
 
-			int accountLifeTime = verifyDate.compareTo(creationDate);
+			int monthVerifyDate = verifyDate.getMonthValue();
+			int monthLifeTime = monthVerifyDate - monthDate;
 
-			if (accountLifeTime < 0 || accountLifeTime > 30) {
+			int dayCreationDate = dayDate;
+			int dayVerifyDate = verifyDate.getDayOfMonth();
+			int accountLifeTime = dayVerifyDate - dayCreationDate;
+
+			if (yearDate == verifyDate.getYear()) {
+
+				if (monthDate == monthVerifyDate) {
+
+					if (accountLifeTime < 0) {
+						System.out.println("Data Inválida!");
+						return null;
+					}
+				} else if (monthLifeTime == 1) {
+					if (accountLifeTime > 0) {
+						System.out.println("Data Inválida!");
+						return null;
+					}
+				} else {
+					System.out.println("Data Inválida!");
+					return null;
+				}
+			} else {
 				System.out.println("Data Inválida!");
 				return null;
 			}
@@ -270,27 +311,9 @@ public class AccountScreen {
 		return new Account(number, initial_status, creationDate);
 		}
 
-	private String validate(Account account) {
-
-		if (!account.validateNumber()) {
-			return "Número inválido!";
-		} else if (!account.validateStatus()) {
-			return "Status inválido!";
-		} else if (!account.validateBalance()) {
-			return "Saldo negativo inválido!";
-		} else if (!account.filledScore()) {
-			return "Score não preenchido!";
-		} else if (!account.validateDate()) {
-			return "Data inválida!";
-		} else {
-			return null;
-		}
-	}
-
 	private void creditAccount(long number) {
 
-		Account account = dataBaseAccount.findAccount(number);
-
+		Account account = accountMediator.find(number);
 		boolean closedAccountVerify = account.getClosed();
 
 		if (!closedAccountVerify) {
@@ -311,8 +334,7 @@ public class AccountScreen {
 
 	private void debitAccount(long number) {
 
-		Account account = dataBaseAccount.findAccount(number);
-
+		Account account = accountMediator.find(number);
 		boolean blockedAccountVerify = account.getBlocked();
 
 		if (!blockedAccountVerify) {
@@ -333,7 +355,7 @@ public class AccountScreen {
 
 	private void closeAccount(long number) {
 
-		Account account = dataBaseAccount.findAccount(number);
+		Account account = accountMediator.find(number);
 
 		if (account.getClosed()) {
 			System.out.println("Conta já Encerrada!");
@@ -359,7 +381,7 @@ public class AccountScreen {
 
 	private void blockAccount(long number) {
 
-		Account account = dataBaseAccount.findAccount(number);
+		Account account = accountMediator.find(number);
 
 		if (account.getBlocked() || account.getClosed()) {
 			System.out.println("Conta já Bloqueada ou Encerrada!");
@@ -386,7 +408,7 @@ public class AccountScreen {
 
 	private void unlockAccount(long number) {
 
-		Account account = dataBaseAccount.findAccount(number);
+		Account account = accountMediator.find(number);
 
 		if (account.getActivated() || account.getClosed()) {
 			System.out.println("Conta já Ativa ou Conta Encerrada!");
@@ -412,21 +434,19 @@ public class AccountScreen {
 
 	private void deleteAccount(long number) {
 
-		Account account = dataBaseAccount.findAccount(number);
-
-		boolean deleteAccountVerify = dataBaseAccount.delete(number);
+		Account account = accountMediator.find(number);
+		boolean deleteAccountVerify = accountMediator.delete(number);
 
 		if (deleteAccountVerify) {
 			System.out.printf("Conta de numero %d foi Excluida!", account.getNumber());
+		} else {
+			System.out.println(PRODUTO_NAO_ENCONTRADO);
 		}
-
 	}
 
-	private void findAccount() {
-
-		System.out.println("Digite o numero da Conta: ");
-		long number = INPUT.nextLong();
-		Account account = dataBaseAccount.find(number);
+	private void findAccount(long number) {
+		
+		Account account = accountMediator.find(number);
 		String score_value = null;
 
 		if (account == null) {

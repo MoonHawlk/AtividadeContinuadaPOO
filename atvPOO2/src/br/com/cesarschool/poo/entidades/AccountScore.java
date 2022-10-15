@@ -1,4 +1,4 @@
-package br.com.cesarschool.poo.geral;
+package br.com.cesarschool.poo.entidades;
 
 public enum AccountScore {
 	BRONZE(1, "Bronze"),

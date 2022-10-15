@@ -1,4 +1,4 @@
-package br.com.cesarschool.poo.geral;
+package br.com.cesarschool.poo.entidades;
 
 import java.time.LocalDate;
 
@@ -64,29 +64,6 @@ public class Account {
 	
 	public void setScore(String score) {
 		this.score = score;
-	}
-	
-	boolean validateNumber() {
-		if (this.number <= 0) {
-			return false;
-		}
-		return true;
-	}
-	
-	boolean validateStatus() {
-		return status != null;
-	}
-	
-	boolean validateBalance() {
-		return this.balance >= 0;
-	}
-	
-	boolean filledScore() {
-		return score != null;
-	}
-	
-	boolean validateDate() {
-		return creation_date != null;
 	}
 
 	public boolean getActivated() {

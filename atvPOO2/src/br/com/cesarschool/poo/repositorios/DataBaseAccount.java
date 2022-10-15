@@ -1,11 +1,25 @@
-package br.com.cesarschool.poo.geral;
+package br.com.cesarschool.poo.repositorios;
+
+import br.com.cesarschool.poo.entidades.Account;
 
 public class DataBaseAccount {
 	
 	private static final int MAX_SIZE_ACCOUNTS = 1000;
+	private static DataBaseAccount instance = null;
 	
 	private Account[] arrayAccounts = new Account[MAX_SIZE_ACCOUNTS];
 	private int currentSize = 0;
+
+	private DataBaseAccount() {
+
+	}
+
+	public static DataBaseAccount getInstance() {
+		if (instance == null) {
+			instance = new DataBaseAccount();
+		}
+		return instance; 
+	}
 		
 	public boolean include(Account account) {
 		if (findIndex(account.getNumber()) != -1) {
@@ -31,15 +45,6 @@ public class DataBaseAccount {
 		} else {
 			arrayAccounts[index] = account;
 			return true; 
-		}
-	}
-	
-	public Account find(long code) {
-		int index = findIndex(code);
-		if (index == -1) {
-			return null;
-		} else {
-			return arrayAccounts[index];
 		}
 	}
 	
@@ -119,6 +124,5 @@ public class DataBaseAccount {
 		}
 		return null;
 	}
-	
 
 }
