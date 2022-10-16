@@ -22,12 +22,12 @@ public class AccountSavings extends Account {
         this.taxFees = taxFees;
     }
 
-    public float getTotalDeposits() {
+    public int getTotalDeposits() {
         return this.totalDeposits;
     }
 
-    public void setTotalDeposits(int totalDeposits) {
-        this.taxFees = totalDeposits;
+    public void setTotalDeposits() {
+        this.totalDeposits += 1;
     }
     
 }

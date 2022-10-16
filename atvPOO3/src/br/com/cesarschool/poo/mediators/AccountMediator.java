@@ -1,6 +1,7 @@
 package br.com.cesarschool.poo.mediators;
 
 import br.com.cesarschool.poo.entidades.Account;
+import br.com.cesarschool.poo.entidades.AccountSavings;
 import br.com.cesarschool.poo.repositorios.DataBaseAccount;
 
 public class AccountMediator {
@@ -74,6 +75,13 @@ public class AccountMediator {
 			if (!validateStatus(account)) {
 				codeStatus[contErrors++] = AccountValidationStatus.SCORE_NOT_FILLED;
 				mesagesStatus[contErrors] = MESAGE_SCORE_NOT_FILLED;	
+			}
+			if (account instanceof AccountSavings) {
+				AccountSavings accountSavings = (AccountSavings) account;
+				if (accountSavings.getTotalDeposits() < 0) {
+					codeStatus[contErrors++] = AccountValidationStatus.SCORE_NOT_FILLED;
+					mesagesStatus[contErrors] = MESAGE_SCORE_NOT_FILLED;	
+				}
 			}
 		}		
 		return new AccountValidationStatus(codeStatus, mesagesStatus, contErrors == 0);		

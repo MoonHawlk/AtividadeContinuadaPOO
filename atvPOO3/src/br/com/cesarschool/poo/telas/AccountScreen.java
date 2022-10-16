@@ -4,7 +4,10 @@ import java.util.Scanner;
 
 import br.com.cesarschool.poo.entidades.Account;
 import br.com.cesarschool.poo.entidades.AccountScore;
+import br.com.cesarschool.poo.entidades.AccountHolder;
+import br.com.cesarschool.poo.entidades.AccountSavings;
 import br.com.cesarschool.poo.mediators.AccountMediator;
+import br.com.cesarschool.poo.mediators.HolderMediator;
 import br.com.cesarschool.poo.mediators.AccountValidationStatus;
 import br.com.cesarschool.poo.repositorios.DataBaseAccount;
 
@@ -16,6 +19,7 @@ public class AccountScreen {
 	private static final String PRODUTO_NAO_ENCONTRADO = "Produto n�o encontrado!";
 	private static final Scanner INPUT = new Scanner(System.in);
 	private AccountMediator accountMediator = new AccountMediator();
+	private HolderMediator accountHolderMediator = new HolderMediator();
 	private DataBaseAccount dataBaseAccount = DataBaseAccount.getInstance();
     
 	public void executeScreen() {
@@ -187,80 +191,38 @@ public class AccountScreen {
 		System.out.println("Digite o numero da Conta: ");
 		long number = INPUT.nextLong();
 		Account account = accountMediator.find(number);
-		AccountScore score;
-		String score_value;
 
-		if (account == null) {
+		if (account == null ) {
 			System.out.println("Conta não encontrada!");
 			return UNKNOWN_CODE;
 		} else {
-			System.out.println("Numero da Conta: " + account.getNumber());
-			System.out.println("Status da Conta: " + account.getStatus());
-			System.out.println("Saldo da Conta: " + account.getBalance());
-			
-			if (account.getBlocked()) {
-			    System.out.println("Score da Conta: INDISPONÍVEL, Status BLOQUEADO");
-			} else if (account.getClosed()){
-			    System.out.println("Score da Conta: 0, Status Encerrado");
-			} else {
-			    float balance = account.getBalance()*3;
-			    LocalDate dateToday = LocalDate.now();
-			    int accountLifeTime = dateToday.compareTo(account.getCreation_date())*2;
-			    
-			    float resultScore = balance + accountLifeTime;
-			    
-			    if (resultScore < 5800) { 
-			        score = AccountScore.BRONZE;
-			        score_value = score.getScore();
-					account.setScore(score_value);
-			    } else if (resultScore <= 13000 && resultScore >= 5800) {
-			        score = AccountScore.SILVER;
-                    score_value = score.getScore();
-					account.setScore(score_value);
-			    } else if (resultScore <= 39000  && resultScore >= 13001) {
-			        score = AccountScore.GOLD;
-                    score_value = score.getScore();
-					account.setScore(score_value);
-			    } else if (resultScore > 39000) {
-			        score = AccountScore.DIAMOND;
-                    score_value = score.getScore();
-					account.setScore(score_value);
-			    }
-			    
-			    System.out.println("Score da Conta: " + account.getScore());
-			}
-			
-			System.out.println("Criação da Conta: " + account.getCreation_date());
 			return number;
-		}
+		} 
 	}
 
 	private Account captureAccount(long alteredCode) {
 		long number;
-		long valueStatus = 0;
+		int status;
+		int yearDate;
+		int monthDate;
+		int dayDate;
+		boolean verifyCPF;
+		String initial_status = null;
 		LocalDate creationDate = null;
 		LocalDate verifyDate = null;
+		Account account = null;
 		
 		if (alteredCode == UNKNOWN_CODE) {
-			System.out.print("Digite o número da conta: ");
-			number = INPUT.nextLong();
+			number = setAccountNumber();
 			
-			System.out.println("Digite o Status da Conta:");
-			System.out.println("1- Ativa");
-			System.out.println("2- Encerrada");
-			System.out.println("3- Bloqueada");
-			valueStatus = INPUT.nextLong();
+			status = setAccountStatus();
+			initial_status = setStatusAccount(status);
+		
+			yearDate = setYearDateAccount();
 			
-			System.out.println("Digite a Data de Criaçõa da Conta:");
-			System.out.println("Nesse Formato (YYYY/MM/DD)");
-			System.out.println("Ano:");
-			int yearDate = INPUT.nextInt();
+			monthDate = setMonthDateAccount();
 			
-			System.out.println("Mês:");
-			int monthDate = INPUT.nextInt();
-			
-			System.out.println("Dia:");
-			int dayDate = INPUT.nextInt();
+			dayDate = setDayDateAccount();
 			
 			creationDate = LocalDate.of(yearDate, monthDate, dayDate);
 			verifyDate = LocalDate.now();
@@ -293,23 +255,36 @@ public class AccountScreen {
 				System.out.println("Data Inválida!");
 				return null;
 			}
+
+			System.out.println("Digite o nome do Correntista: ");
+			String name = INPUT.next();
+
+			System.out.println("Digite o CPF do Correntista:");
+			String cpf = INPUT.next();
+			verifyCPF = accountHolderMediator.validateCPF(cpf);
+
+			if (verifyCPF) {
+				AccountHolder holder = new AccountHolder(cpf, name);
+				System.out.print("ATENÇÃO: se a Conta NÃO for Poupança, DIGITE 0 NO PRÓXIMO CAMPO!!");
+				System.out.print("Digite a taxa de juros: ");
+				int taxFees = INPUT.nextInt();
+
+				if (taxFees == 0) {			
+					account = new Account(number, initial_status, creationDate, holder);
+					account.setHolder(holder);
+				} else {
+					account = new AccountSavings(number, initial_status, creationDate, holder, taxFees);
+				}
+			} else {
+				System.out.println("CPF INVÁLIDO");
+			}
 			
 		} else {
 			number = alteredCode;
 		}
-			
-		String initial_status = null;
 		
-		if (valueStatus == 1) {
-		    initial_status = "Ativa";
-		} else if (valueStatus == 2) {
-		    initial_status = "Encerrada";
-		} else if (valueStatus == 3) {
-		    initial_status = "Bloqueada";
-		}
-		
-		return new Account(number, initial_status, creationDate);
-		}
+		return account;
+	}
 
 	private void creditAccount(long number) {
 
@@ -447,42 +422,115 @@ public class AccountScreen {
 	private void findAccount(long number) {
 		
 		Account account = accountMediator.find(number);
-		String score_value = null;
 
 		if (account == null) {
 			System.out.println("Conta não encontrada!");
 		} else {
-			System.out.println("Numero da Conta: " + account.getNumber());
-			System.out.println("Status da Conta: " + account.getStatus());
-			System.out.println("Saldo da Conta: " + account.getBalance());
+			printAccount(account);
+		} 
+	}
+
+	private long setAccountNumber() {
+		long number;
+
+		System.out.print("Digite o número da conta: ");
+		number = INPUT.nextLong();
+
+		return number;
+	}
+
+	private int setAccountStatus() {
+		int valueStatus = 0;
+
+		System.out.println("Digite o Status da Conta:");
+		System.out.println("1- Ativa");
+		System.out.println("2- Encerrada");
+		System.out.println("3- Bloqueada");
+		valueStatus = INPUT.nextInt();
+
+		return valueStatus;
+	}
+
+	private int setYearDateAccount() {
+		System.out.println("Nesse Formato (YYYY/MM/DD)");
+		System.out.println("Ano:");
+		int yearDate = INPUT.nextInt();
+
+		return yearDate;
+	}
+
+	private int setMonthDateAccount() {
+		System.out.println("Mês:");
+		int monthDate = INPUT.nextInt();
+
+		return monthDate;
+	}
+
+	private int setDayDateAccount() {
+		System.out.println("Dia:");
+		int dayDate = INPUT.nextInt();
+
+		return dayDate;
+	}
+
+	private String setStatusAccount(int status) {
+		String initial_status = null;
+
+		if (status == 1) {
+		    initial_status = "Ativa";
+		} else if (status == 2) {
+		    initial_status = "Encerrada";
+		} else if (status == 3) {
+		    initial_status = "Bloqueada";
+		}
+
+		return initial_status;
+	}
+
+	private void printAccount(Account account) {
+		AccountHolder holder = null;
+		String score_value = null;
+
+		System.out.println("Numero da Conta: " + account.getNumber());
+		System.out.println("Status da Conta: " + account.getStatus());
+		System.out.println("Saldo da Conta: " + account.getBalance());
 			
-			if (account.getBlocked()) {
-			    System.out.println("Score da Conta: INDISPONÍVEL, Status BLOQUEADO");
-			} else if (account.getClosed()){
+		if (account.getBlocked()) {
+			System.out.println("Score da Conta: INDISPONÍVEL, Status BLOQUEADO");
+		} else if (account.getClosed()){
 			    System.out.println("Score da Conta: 0, Status ENCERRADO");
-			} else {
-			    float balance = account.getBalance()*3;
-			    LocalDate dateToday = LocalDate.now();
-			    int accountLifeTime = dateToday.compareTo(account.getCreation_date())*2;
+		} else {
+			float balance = account.getBalance()*3;
+			LocalDate dateToday = LocalDate.now();
+			int accountLifeTime = dateToday.compareTo(account.getCreation_date())*2;
 			    
-			    float resultScore = balance + accountLifeTime;
+			float resultScore = balance + accountLifeTime;
 			    
-			    if (resultScore < 5800) { 
-			        score_value = "Bronze";
-			    } else if (resultScore <= 13000 && resultScore >= 5800) {
-			        score_value = "Prata";
-			    } else if (resultScore <= 39000  && resultScore >= 13001) {
-			        score_value = "Ouro";
-			    } else if (resultScore > 39000) {
-			        score_value = "Diamante";
-			    }
-			    
-			    System.out.println("Score da Conta: " + score_value);
+			if (resultScore < 5800) { 
+			    score_value = "Bronze";
+			} else if (resultScore <= 13000 && resultScore >= 5800) {
+			     score_value = "Prata";
+			} else if (resultScore <= 39000  && resultScore >= 13001) {
+			    score_value = "Ouro";
+			} else if (resultScore > 39000) {
+			    score_value = "Diamante";
 			}
+			    
+			System.out.println("Score da Conta: " + score_value);
+		}
 			
 			System.out.println("Criação da Conta: " + account.getCreation_date());
-			
-		}
+
+			holder = account.getHolder();
+			System.out.println("Nome do Correntista: " + holder.getName());
+			System.out.println("CPF do Correntista: " + holder.getCpfCnpj());
+
+			if (account instanceof AccountSavings) {
+				AccountSavings accountSavings = (AccountSavings) account;
+				System.out.println("Taxa de Juros: " + accountSavings.getTaxFees());
+				System.out.println("Total de Depósitos: " + accountSavings.getTotalDeposits());
+			}
+
 	}
 
 }

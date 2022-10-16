@@ -42,8 +42,7 @@ public class HolderMediator {
 		}
 	}
 
-    public boolean validateCPF(AccountHolder holder) {
-        String cpf = holder.getCpfCnpj();
+    public boolean validateCPF(String cpf) {
 
         if (ValidateCPF.isCPF(cpf) == true) {
             return true;
