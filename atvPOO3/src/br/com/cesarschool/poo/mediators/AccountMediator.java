@@ -104,4 +104,12 @@ public class AccountMediator {
 	boolean validateStatus(Account account) {
 		return account.getScore() != null;
 	}
+	public boolean validateTaxFee(int taxFee) {
+		
+		if (taxFee < 0) {
+			return false;
+		} else {
+			return true;
+		}
+	}
 }

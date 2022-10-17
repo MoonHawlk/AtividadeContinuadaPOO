@@ -1,6 +1,7 @@
 package br.com.cesarschool.poo.repositorios;
 
 import br.com.cesarschool.poo.entidades.Account;
+import br.com.cesarschool.poo.entidades.AccountSavings;
 
 public class DataBaseAccount {
 	
@@ -84,7 +85,16 @@ public class DataBaseAccount {
 		if (number < 0) {
 			return false;
 		} else {
-			account.setBalance(account.getBalance() + creditValue);
+
+			if (account instanceof AccountSavings) {
+				AccountSavings accountSavings = (AccountSavings) account;
+				float aux = (1 + accountSavings.getTaxFees()/100)*creditValue;
+
+				accountSavings.setBalance(accountSavings.getBalance() + aux);
+			} else {
+				account.setBalance(account.getBalance() + creditValue);
+			}
+			
 			return true;
 		}		
 	}

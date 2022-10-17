@@ -162,16 +162,11 @@ public class AccountScreen {
 			int sessionVariable = INPUT.nextInt();
 
 			if (sessionVariable == 1) {
-				System.out.println("Digite a Data de Criaçõa da Conta:");
-				System.out.println("Nesse Formato (YYYY/MM/DD)");
-				System.out.println("Ano:");
-				int yearDate = INPUT.nextInt();
+				int yearDate = setYearDateAccount();
 				
-				System.out.println("Mês:");
-				int monthDate = INPUT.nextInt();
+				int monthDate = setMonthDateAccount();
 				
-				System.out.println("Dia:");
-				int dayDate = INPUT.nextInt();
+				int dayDate = setDayDateAccount();
 				
 				account.setCreationDate(LocalDate.of(yearDate, monthDate, dayDate));
 				System.out.println(("Data de Criação Alterada!"));
@@ -179,6 +174,36 @@ public class AccountScreen {
 				System.out.println("Operação Cancelada!");
 			} else {
 				System.out.println("Opção Inválida");
+			}
+
+			if (account instanceof AccountSavings) {
+				AccountSavings accountSavings = (AccountSavings) account;
+				boolean validateTaxFee;
+				System.out.println("Deseja alterar a Taxa de Juros da Conta:");
+				System.out.println("1- Alterar");
+				System.out.println("5- Cancelar");
+
+				sessionVariable = INPUT.nextInt();
+
+				if (sessionVariable == 1) {
+					System.out.println("Digite a taxa de Juros: ");
+					int taxFee = INPUT.nextInt();
+
+					validateTaxFee = accountMediator.validateTaxFee(taxFee);
+
+					if (validateTaxFee) {
+						accountSavings.setTaxFees(taxFee);
+						System.out.println("Taxa de Juros Alterada!");
+					} else {
+						System.out.println("Valor da Taxa de Juros Inválida!");
+					}
+
+				} else if (sessionVariable == 5) {
+					System.out.println("Operação Cancelada!");
+				} else {
+					System.out.println("Opção Inválida");
+				}
+
 			}
 		} else {
 			processaMensagensErroValidacao(status);
@@ -207,6 +232,7 @@ public class AccountScreen {
 		int monthDate;
 		int dayDate;
 		boolean verifyCPF;
+		boolean validateTaxFee;
 		String initial_status = null;
 		LocalDate creationDate = null;
 		LocalDate verifyDate = null;
@@ -273,7 +299,14 @@ public class AccountScreen {
 					account = new Account(number, initial_status, creationDate, holder);
 					account.setHolder(holder);
 				} else {
-					account = new AccountSavings(number, initial_status, creationDate, holder, taxFees);
+					validateTaxFee = accountMediator.validateTaxFee(taxFees);
+
+					if (validateTaxFee) {
+						account = new AccountSavings(number, initial_status, creationDate, holder, taxFees);
+					} else {
+						System.out.println("Valor da Taxa de Juros Inválida!");
+					}
+					
 				}
 			} else {
 				System.out.println("CPF INVÁLIDO");
@@ -294,10 +327,16 @@ public class AccountScreen {
 		if (!closedAccountVerify) {
 			System.out.println("Digite o valor a ser Creditado: ");
 			float creditValue = INPUT.nextFloat();
+
 			boolean dataBaseReturn = dataBaseAccount.credit(account, creditValue);
 
 			if (dataBaseReturn) {
 				System.out.printf("Valor de %f foi Creditado com sucesso!", creditValue);
+				
+				if (account instanceof AccountSavings) {
+					AccountSavings accountSavings = (AccountSavings) account;
+					accountSavings.setTotalDeposits();
+				}
 			} else {
 				System.out.println("Erro ao Creditar valor");
 			}
@@ -452,6 +491,7 @@ public class AccountScreen {
 	}
 
 	private int setYearDateAccount() {
+		System.out.println("Digite a Data de Criaçõa da Conta:");
 		System.out.println("Nesse Formato (YYYY/MM/DD)");
 		System.out.println("Ano:");
 		int yearDate = INPUT.nextInt();
