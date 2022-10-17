@@ -126,11 +126,14 @@ public class DataBaseAccount {
 	}
 
 	public Account findAccount(long number) {
+		long numberVerify = 0;
 		for (int i = 0; i < arrayAccounts.length; i++) {
-			long numberVerify = arrayAccounts[i].getNumber();
+			if (arrayAccounts[i] != null) {
+				numberVerify = arrayAccounts[i].getNumber();
+			}
 			if (numberVerify > 0 && numberVerify == number) {
 				return arrayAccounts[i]; 				
-			}
+			} 
 		}
 		return null;
 	}

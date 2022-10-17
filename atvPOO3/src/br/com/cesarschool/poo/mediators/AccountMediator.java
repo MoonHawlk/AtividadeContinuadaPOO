@@ -68,10 +68,10 @@ public class AccountMediator {
 				codeStatus[contErrors++] = AccountValidationStatus.PRECO_INVALIDO;
 				mesagesStatus[contErrors] = MENSAGEM_PRECO_INVALIDO;				
 			}		
-			if (!filledScore(account)) {
+			/*if (!filledScore(account)) {
 				codeStatus[contErrors++] = AccountValidationStatus.SCORE_NOT_FILLED;
 				mesagesStatus[contErrors] = MESAGE_SCORE_NOT_FILLED;												
-			}
+			}*/
 			if (!validateStatus(account)) {
 				codeStatus[contErrors++] = AccountValidationStatus.SCORE_NOT_FILLED;
 				mesagesStatus[contErrors] = MESAGE_SCORE_NOT_FILLED;	
