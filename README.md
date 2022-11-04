@@ -1,5 +1,15 @@
-### AtividadeContinuadaPOO
+# Atividade continuada Programação Orientada a Objetos 
+Repo to store codes developed for POO
 
-Repositorio para atividade continuada Programação Orientada a Objetos 
+Professor: Eduardo Calábria
 
-Alunos: Diogo Maranhão, Filipe Moreno, Gabriel Costa, Ian Pedro, Rennan Pontes
+Contributors
+----------------------------
+
+Class A:
+  - Diogo Maranhão
+  - Filipe Moreno
+  - Gabriel Costa
+  - Ian Pedro
+  - Rennan Pontes
+
